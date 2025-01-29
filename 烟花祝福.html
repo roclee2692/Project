@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <style>
+    /* 重置默认边距和内边距 */
+    body,
+    html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: black;
+    }
+
+    p {
+      color: white;
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    canvas {
+      /* 使用视口单位确保始终占满窗口 */
+      width: 100vw;
+      height: calc(100vh - 100px); /* 减去<p>标签的高度（假设字体大小24px + 下边距10px） */
+    }
+  </style>
+</head>
+
+<body>
+  <p>To：李鹏</br>“愿你在2025年里，生活如烟花般绚烂，每一个梦想都能绽放光彩，新年快乐！”</p >
+  <canvas id="greetingCanvas"></canvas>
+  <script>
+    const canvas = document.getElementById('greetingCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function updateCanvasSize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight - 34; // 减去<p>标签的高度
+    }
+
+    // 初始设置canvas尺寸
+    updateCanvasSize();
+    // 监听窗口resize事件，窗口大小变化时更新canvas尺寸
+    window.addEventListener('resize', updateCanvasSize);
+
+    const colors = ['red', 'blue', 'yellow', 'green', 'orange', 'purple', 'aqua', 'pink'];
+    const particles = [];
+    let titleColorIndex = 0;
+    let tipColorIndex = 0;
+    const colorChangeInterval = 50;
+    let frameCount = 0;
+
+    class Particle {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+        this.vx = Math.random() * 6 - 3;
+        this.vy = Math.random() * 10 - 5;
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.1;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 3, 0, 2 * Math.PI);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      }
+    }
+
+    canvas.addEventListener('click', function (event) {
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      for (let i = 0; i < 50; i++) {
+        particles.push(new Particle(x, y));
+      }
+    });
+
+    function drawScene() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < particles.length; i++) {
+        const particle = particles[i];
+        particle.update();
+        particle.draw();
+
+        if (particle.y > canvas.height) {
+          particles.splice(i, 1);
+          i--;
+        }
+      }
+
+      frameCount++;
+      if (frameCount % colorChangeInterval === 0) {
+        titleColorIndex = (titleColorIndex + 1) % colors.length;
+        tipColorIndex = (tipColorIndex + 1) % colors.length;
+      }
+
+      const titleColor = colors[titleColorIndex];
+      ctx.font = '72px Arial';
+      ctx.fillStyle = titleColor;
+      ctx.textAlign = 'center';
+      ctx.fillText('2025新年快乐！', canvas.width / 2, canvas.height / 2);
+
+      const tipColor = colors[tipColorIndex];
+      ctx.font = '36px Arial';
+      ctx.fillStyle = tipColor;
+      ctx.fillText('点击屏幕发射烟花', canvas.width / 2, canvas.height - 50);
+
+      requestAnimationFrame(drawScene);
+    }
+
+    drawScene();
+  </script>
+</body>
+
+</html> 
