@@ -3,275 +3,124 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>2025 New Year Greeting</title>
   <style>
-    /* Reset default margins and paddings */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    /* Body and HTML styling */
+    /* 重置默认边距和内边距 */
     body,
     html {
-      width: 100%;
-      height: 100%;
+      margin: 0;
+      padding: 0;
       overflow: hidden;
-      background-color: #000010; /* Dark night sky */
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      position: relative;
+      background-color: black;
     }
 
-    /* Starfield background */
-    #starfield {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      background: transparent;
-      z-index: 0;
-    }
-
-    /* Greeting message styling */
-    .greeting-container {
-      position: absolute;
-      top: 20px;
-      width: 100%;
+    p {
+      color: white;
       text-align: center;
-      z-index: 2;
-      color: #fff;
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
-    }
-
-    .greeting-container p {
       font-size: 24px;
       margin-bottom: 10px;
-      line-height: 1.4;
-      animation: fadeIn 2s ease-in-out;
     }
 
-    /* Responsive canvas */
     canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 1;
-    }
-
-    /* Animated Text Effects */
-    @keyframes glow {
-      0% {
-        text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #ff00de, 0 0 20px #ff00de, 0 0 25px #ff00de, 0 0 30px #ff00de, 0 0 35px #ff00de;
-      }
-      50% {
-        text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #ff00de, 0 0 40px #ff00de, 0 0 50px #ff00de, 0 0 60px #ff00de, 0 0 70px #ff00de;
-      }
-      100% {
-        text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #ff00de, 0 0 20px #ff00de, 0 0 25px #ff00de, 0 0 30px #ff00de, 0 0 35px #ff00de;
-      }
-    }
-
-    .main-title {
-      font-size: 48px;
-      margin-bottom: 20px;
-      animation: glow 2s infinite alternate;
-    }
-
-    .sub-title {
-      font-size: 24px;
-      color: #ffcc00;
-      animation: fadeIn 3s ease-in-out;
-    }
-
-    /* FadeIn animation for text */
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Responsive typography */
-    @media (max-width: 768px) {
-      .main-title {
-        font-size: 36px;
-      }
-
-      .sub-title {
-        font-size: 18px;
-      }
-
-      .greeting-container p {
-        font-size: 18px;
-      }
+      /* 使用视口单位确保始终占满窗口 */
+      width: 100vw;
+      height: calc(100vh - 100px); /* 减去<p>标签的高度（假设字体大小24px + 下边距10px） */
     }
   </style>
 </head>
 
 <body>
-  <!-- Starfield Canvas -->
-  <canvas id="starfield"></canvas>
-
-  <!-- Greeting Message Container -->
-  <div class="greeting-container">
-    <p>To：李鹏<br>“愿你在2025年里，生活如烟花般绚烂，每一个梦想都能绽放光彩，新年快乐！”</p>
-    <div class="main-title">2025 新年快乐！</div>
-    <div class="sub-title">点击或触摸屏幕发射烟花</div>
-  </div>
-
-  <!-- Fireworks Canvas -->
-  <canvas id="fireworksCanvas"></canvas>
-
-  <!-- Optional Sound Effects -->
-  <audio id="fireworkSound" src="https://example.com/firework-sound.mp3" preload="auto"></audio>
-
+  <p>To：张元冰</br>“愿你在2025年里，生活如烟花般绚烂，每一个梦想都能绽放光彩，新年快乐！”</p >
+  <canvas id="greetingCanvas"></canvas>
   <script>
-    // Starfield Implementation
-    const starCanvas = document.getElementById('starfield');
-    const starCtx = starCanvas.getContext('2d');
-    let stars = [];
-    const numStars = 100;
+    const canvas = document.getElementById('greetingCanvas');
+    const ctx = canvas.getContext('2d');
 
-    // Resize starfield canvas
-    function resizeStarfield() {
-      starCanvas.width = window.innerWidth;
-      starCanvas.height = window.innerHeight;
+    function updateCanvasSize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight - 34; // 减去<p>标签的高度
     }
 
-    window.addEventListener('resize', resizeStarfield);
-    resizeStarfield();
+    // 初始设置canvas尺寸
+    updateCanvasSize();
+    // 监听窗口resize事件，窗口大小变化时更新canvas尺寸
+    window.addEventListener('resize', updateCanvasSize);
 
-    // Initialize stars
-    for (let i = 0; i < numStars; i++) {
-      stars.push({
-        x: Math.random() * starCanvas.width,
-        y: Math.random() * starCanvas.height,
-        radius: Math.random() * 1.5,
-        alpha: Math.random(),
-        deltaAlpha: Math.random() * 0.02
-      });
-    }
+    const colors = ['red', 'blue', 'yellow', 'green', 'orange', 'purple', 'aqua', 'pink'];
+    const particles = [];
+    let titleColorIndex = 0;
+    let tipColorIndex = 0;
+    const colorChangeInterval = 50;
+    let frameCount = 0;
 
-    // Draw stars
-    function drawStars() {
-      starCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
-      starCtx.fillStyle = '#ffffff';
-      stars.forEach(star => {
-        star.alpha += star.deltaAlpha;
-        if (star.alpha <= 0 || star.alpha >= 1) {
-          star.deltaAlpha *= -1;
-        }
-        starCtx.globalAlpha = star.alpha;
-        starCtx.beginPath();
-        starCtx.arc(star.x, star.y, star.radius, 0, 2 * Math.PI);
-        starCtx.fill();
-      });
-      starCtx.globalAlpha = 1;
-      requestAnimationFrame(drawStars);
-    }
-
-    drawStars();
-
-    // Fireworks Implementation
-    const fireworksCanvas = document.getElementById('fireworksCanvas');
-    const ctx = fireworksCanvas.getContext('2d');
-
-    // Resize fireworks canvas
-    function resizeCanvas() {
-      fireworksCanvas.width = window.innerWidth;
-      fireworksCanvas.height = window.innerHeight;
-    }
-
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    // Load firework sound
-    const fireworkSound = document.getElementById('fireworkSound');
-
-    // Utility Functions
-    function random(min, max) {
-      return Math.random() * (max - min) + min;
-    }
-
-    function calculateDistance(x1, y1, x2, y2) {
-      const dx = x2 - x1;
-      const dy = y2 - y1;
-      return Math.sqrt(dx * dx + dy * dy);
-    }
-
-    // Particle Class for Fireworks
     class Particle {
-      constructor(x, y, targetX, targetY, color) {
-        this.x = x;
-        this.y = y;
-        this.targetX = targetX;
-        this.targetY = targetY;
-        this.color = color;
-        this.size = random(2, 4);
-        this.speed = random(2, 5);
-        this.angle = Math.atan2(targetY - y, targetX - x);
-        this.vx = Math.cos(this.angle) * this.speed;
-        this.vy = Math.sin(this.angle) * this.speed;
-        this.gravity = 0.02;
-        this.friction = 0.98;
-        this.opacity = 1;
-        this.decay = random(0.005, 0.015);
-      }
-
-      update() {
-        this.vx *= this.friction;
-        this.vy *= this.friction;
-        this.vy += this.gravity;
-        this.x += this.vx;
-        this.y += this.vy;
-        this.opacity -= this.decay;
-      }
-
-      draw() {
-        ctx.save();
-        ctx.globalAlpha = this.opacity;
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.restore();
-      }
-
-      isDead() {
-        return this.opacity <= 0;
-      }
-    }
-
-    // Firework Class
-    class Firework {
       constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.color = `hsl(${Math.floor(random(0, 360))}, 100%, 50%)`;
-        this.particles = [];
-        this.createParticles();
-      }
-
-      createParticles() {
-        const particleCount = random(50, 100);
-        for (let i = 0; i < particleCount; i++) {
-          const angle = random(0, Math.PI * 2);
-          const distance = random(100, 300);
-          const targetX = this.x + Math.cos(angle) * distance;
-          const targetY = this.y + Math.sin(angle) * distance;
-          this.particles.push(new Particle(this.x, this.y, targetX, targetY, this.color));
-        }
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+        this.vx = Math.random() * 6 - 3;
+        this.vy = Math.random() * 10 - 5;
       }
 
       update() {
-        this.particles.forEach(particle => particle.update());
-        this.particles = this.particles.filter(particle => !particle.isDead());
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.1;
       }
 
       draw() {
-        this.particles.forEach(particle => particle.draw());
-   
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 3, 0, 2 * Math.PI);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      }
+    }
+
+    canvas.addEventListener('click', function (event) {
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      for (let i = 0; i < 50; i++) {
+        particles.push(new Particle(x, y));
+      }
+    });
+
+    function drawScene() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < particles.length; i++) {
+        const particle = particles[i];
+        particle.update();
+        particle.draw();
+
+        if (particle.y > canvas.height) {
+          particles.splice(i, 1);
+          i--;
+        }
+      }
+
+      frameCount++;
+      if (frameCount % colorChangeInterval === 0) {
+        titleColorIndex = (titleColorIndex + 1) % colors.length;
+        tipColorIndex = (tipColorIndex + 1) % colors.length;
+      }
+
+      const titleColor = colors[titleColorIndex];
+      ctx.font = '72px Arial';
+      ctx.fillStyle = titleColor;
+      ctx.textAlign = 'center';
+      ctx.fillText('2025新年快乐！', canvas.width / 2, canvas.height / 2);
+
+      const tipColor = colors[tipColorIndex];
+      ctx.font = '36px Arial';
+      ctx.fillStyle = tipColor;
+      ctx.fillText('点击屏幕发射烟花', canvas.width / 2, canvas.height - 50);
+
+      requestAnimationFrame(drawScene);
+    }
+
+    drawScene();
+  </script>
+</body>
+
+</html> 
